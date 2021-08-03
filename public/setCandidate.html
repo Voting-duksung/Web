@@ -1,0 +1,186 @@
+<!-- 선거장 등록 -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="http://bootstrapk.com/favicon.ico">
+
+    <title>Block Chain Voting System</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="http://bootstrapk.com/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="http://bootstrapk.com/examples/starter-template/starter-template.css" rel="stylesheet">
+
+    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+    <script src="http://bootstrapk.com/assets/js/ie-emulation-modes-warning.js"></script>
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    </head>
+    <![endif]-->
+<body>
+
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="http://localhost:9545/web/blog/">Block Chain Voting System</a>
+        </div>
+        <div id="navbar" class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+                <li class="active"><a href="http://localhost:9545/web/setCandidate">후보자 생성</a></li>
+                <li><a href="http://localhost:9545/web/setPollingPlace">선거장 생성</a></li>
+                <li><a href="http://localhost:9545/web/getAllplace">선거장 관리</a></li>
+                <li><a href="http://localhost:9545/web/getCounting">개표하기</a></li>
+            </ul>
+        </div><!--/.nav-collapse -->
+    </div>
+</nav>
+
+<div class="container">
+    <div class="contentwrap">
+        <article class="container">
+            <div class="page-header">
+                <h1>예비 후보자 등록 <small>예비 후보자를 등록해주세요.</small></h1>
+            </div>
+            <form class="form-horizontal" method="post" enctype="multipart/form-data" action="/web/setCandidate">
+
+                <div class="form-group">
+                    <label for="inputName" class="col-sm-2 control-label">선거장 번호</label>
+                    <div class="col-sm-6">
+                        <input type="text" class="form-control" id="inputvote" name = "wantvote" placeholder="ex) 1-> 총학, 2-> 글로벌융합대학, 3-> 과학기술대학, 4-> 약학대학, 5-> Art&design대학 ">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="inputName" class="col-sm-2 control-label">후보자 번호</label>
+                    <div class="col-sm-6">
+                        <input type="text" class="form-control" id="inputNumber" name = "candidateid" placeholder="ex) 기호 1번 > '1'입력 ">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="inputName" class="col-sm-2 control-label">후보자 이름</label>
+                    <div class="col-sm-6">
+                        <input type="text" class="form-control" id="inputName" name = "name" placeholder="이름">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="inputName" class="col-sm-2 control-label">선본명</label>
+                    <div class="col-sm-6">
+                        <input type="text" class="form-control" id="inputcampname" name = "campname" placeholder="ex) 팔레트">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="inputName" class="col-sm-2 control-label">구호</label>
+                    <div class="col-sm-6">
+                        <input type="text" class="form-control" id="inputSlogan" name = "slogan" placeholder="ex) 우리가 일으킬 새파란 물결 ">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="inputName" class="col-sm-2 control-label">학과/전공</label>
+                    <div class="col-sm-6">
+                        <td>
+                            <select name = "departure">
+                                <option value ="selected">학과/전공을 선택해주세요.</option>
+                                <option value ="1">국어국문학전공</option>
+                                <option value ="1">일어일문학전공</option>
+                                <option value ="1">중어중문학전공</option>
+                                <option value ="1">영어영문학전공</option>
+                                <option value ="1">불어불문학전공</option>
+                                <option value ="1">스페인어전공</option>
+                                <option value ="1">사학전공</option>
+                                <option value ="1">컴퓨터공학전공</option>
+                                <option value ="1">IT미디어공학전공</option>
+                                <option value ="1">사이버보안전공</option>
+                                <option value ="1">수학전공</option>
+                                <option value ="1">화학전공</option>
+                                <option value ="1">정보통계학전공</option>
+                                <option value ="1">동양하과전공</option>
+                            </select>
+                        </td>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="inputName" class="col-sm-2 control-label">후보자 사진</label>
+                    <div class="col-sm-6">
+                        <td><input type="file" name="file"></td>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="inputName" class="col-sm-2 control-label">후보자 공약</label>
+                    <div class="col-sm-6">
+                        <input type="text" class="form-control" id="inputpromiseUrl" name = "promise" placeholder=" ex) 1. 강의실 에어컨 설치 2. 간식행사 질 향상">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="inputName" class="col-sm-2 control-label">지원 선거</label>
+                    <div class="col-sm-6">
+                        <td>
+                            <select name = "college">
+                                <option value ="selected">지원하는 선거를 선택해주세요.</option>
+                                <option value ="1">총학생회 선거</option>
+                            </select>
+                        </td>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="inputAgree" class="col-sm-2 control-label">약관 동의</label>
+                    <div class="col-sm-6 checkbox">
+                        <label>
+                            <input id="agree" type="checkbox"> <a href="/agreement"> 이용약관</a>에 동의합니다.
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="inputName" class="col-sm-2 control-label"></label>
+                    <div class="col-sm-6">
+                        <button type="submit" class="btn btn-primary">등록</button>
+                    </div>
+                </div>
+
+            </form>
+        </article>
+    </div>
+</div><!-- /.container -->
+
+<!-- <nav class="navbar navbar-fixed-bottom">
+    <div class="container">
+        <center>
+            <p class="footer_text">이용약관 | 개인정보 취급방침 | 자주 묻는 질문 | 온라인 투표 시스템</p>
+        </center>
+    </div>
+</nav> -->
+
+<!-- Bootstrap core JavaScript
+================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+<script src="http://bootstrapk.com/dist/js/bootstrap.min.js"></script>
+<!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+<script src="http://bootstrapk.com/assets/js/ie10-viewport-bug-workaround.js"></script>
+</body>
+</html>
