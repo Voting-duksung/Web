@@ -4,7 +4,7 @@ var async = require('async');
 var express = require('express');
 var router = express.Router();
 var path = process.cwd();
-console.log("appRouter 실행됨");
+console.log("appRouter 사용");
 var blockFunc = require( path + '/model/blockFunc' );
 var dbFunc = require( path + '/model/dbFunc' );
 var FH = require( path + '/model/funcHandling')
@@ -12,7 +12,6 @@ var view = require( path + '/view/json' );
 
 // 1. 선거가 시작 중인 선거장
 router.get('/getStartedPlace', function(req, res){
-    console.log("APPROUTER 선거장 불러오기");
     blockFunc.placeLength(function(err, length){
         if(!err){
             blockFunc.extractArr(0, 0, length, function(err, result){
@@ -153,15 +152,30 @@ router.get('/getBookedCandidate', function(req, res){
 
 // 5. 투표권을 행사합니다.
 router.get('/setVote', function(req, res){
+    console.log("투표권 행사 호출");
     var placeid = parseInt(req.param('placeid'));
     var candidateid = parseInt(req.param('candidateid'));
-    var phone = parseInt(req.param('phone'));
+    var UserNumber = parseInt(req.param('UserNumber'));
 
-    blockFunc.getCheckVoted(placeid, phone, function(err, resd){
+    // console.log(req.params.placeid)
+    // console.log(req.body.candidateid);
+    // console.log(req.body.UserNumber);
+
+    // var placeid = parseInt(req.params.placeid);
+    // var candidateid = parseInt(req.params.candidateid);
+    // var phone = parseInt(req.params.UserNumber);
+
+    console.log(placeid+"선거장 아이디");
+    console.log(candidateid+"후보자 번호");
+    console.log(UserNumber+"학번");
+    
+
+    blockFunc.getCheckVoted(placeid, UserNumber, function(err, resd){
         if(!resd){
-            blockFunc.setVote(placeid, candidateid, phone, function(_err, _res) {
+            blockFunc.setVote(placeid, candidateid, UserNumber, function(_err, _res) {
                 if(!_err) {
                     view.jsonParsing(200, "success", _res, function(jsonData){
+                        console.log("투표 성공");
                         res.json(jsonData);
                     })
                 } else {
@@ -172,6 +186,7 @@ router.get('/setVote', function(req, res){
             });
         } else {
             view.jsonParsing(401, "이미 투표권을 행사하셨습니다.", "", function(jsonData){
+                console.log("이미 했대");
                 res.json(jsonData)
             })
         }
