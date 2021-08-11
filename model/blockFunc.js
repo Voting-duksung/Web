@@ -3,19 +3,20 @@
 var async = require('async');
 var path = process.cwd();
 var BVC = require( path + '/config/blockChain')
-console.log("blockFunc.js 실행");
 
 // 1. 블록체인에 선거장을 생성합니다. placeid를 반환합니다.
 module.exports.setPollingPlace = function(result) {
+    console.log('블록체인 setPoliingplace 사용중');
     BVC.setPollingPlace.sendTransaction(function(_err, _res){
         if(!_err) {
             BVC.getPollingPlace.call(function(err, res){
                 if(!err) {
                     result(null, res[0].toLocaleString(), res[1].toLocaleString());
+                    console.log(result);
                 } else {
                     result(err, null);
                 }
-            })
+            });
         } else {
             result(_err, null);
         }
@@ -40,8 +41,8 @@ module.exports.setCandidate = function(placeid, result) {
 };
 
 // 5. 투표하는 메소드입니다.
-module.exports.setVote = function(placeid, candidateid, phone, result) {
-    BVC.setVote.sendTransaction(placeid, candidateid, phone, {gas: 900000, gasPrice: 1}, function(err, res) {
+module.exports.setVote = function(placeid, candidateid, UserNumber, result) {
+    BVC.setVote.sendTransaction(placeid, candidateid, UserNumber, {gas: 900000, gasPrice: 1}, function(err, res) {
         if(!err) {
             result(null, res);
         } else {
@@ -51,8 +52,8 @@ module.exports.setVote = function(placeid, candidateid, phone, result) {
 };
 
 // 7. 투표를 했는지 확인하는 메소드입니다.
-module.exports.getCheckVoted = function(placeid, phone, result) {
-    BVC.getCheckVoted(phone, placeid, function(err, res) {
+module.exports.getCheckVoted = function(placeid, UserNumber, result) {
+    BVC.getCheckVoted(UserNumber, placeid, function(err, res) {
         if(!err) {
             result(null, res);
         } else {
@@ -89,36 +90,18 @@ module.exports.setVoteEnd = function(placeid, result) {
 module.exports.extractArr = function(selector, placeid, length, outcome) {
     var result = []
 
-    // let array = new Array(parseInt(length));
-
-    // Array.apply(null, new Array(parseInt(length)+1)).map(function (item, index) {
-    //     console.log(placeid+"placeid야야야!!!!!!!!!!!!!!!1");
-    //     console.log(index+"index야야야!!!!!!!!!!!!!!!1");
-    //     console.log("히히"+closureAdd(selector, index, placeid));
-    //     result.push(closureAdd(selector, index, placeid));
-    // });
-
-    Array.apply(null, Array(parseInt(length)+1)).map(function (item, index) {
+    Array.apply(null, Array(parseInt(length + 1))).map(function (item, index) {
         result.push(closureAdd(selector, index, placeid));
     })
 
-    // Array.apply(null, new Array(5)).map(function(){ 
-    //     console.log("끄앙");
-    //     return Array.apply(null,new Array(5)); 
-    // });
-    //     Array.apply(null, array).map(function (item, index) {
-    //     console.log(result+"result push는 되니?1");
-    //     result.push(closureAdd(selector, index, placeid));
-    //     console.log(result+"result push는 되니?2");
-    // })
-
+//apply는 배열 또는 행렬에 주어진 함수를 적용한 뒤 그 결과를 벡터, 배열 또는 리스트로 반환
     async.series(result, function(err, resEnd){
         if (!err){
             outcome(null, resEnd)
         } else {
             outcome(err, null)
         }
-    });
+    })
 };
 
 function closureAdd(number, index, placeid){
@@ -127,6 +110,9 @@ function closureAdd(number, index, placeid){
             return function(callback){
                 exports.getPlaceId(index, function(placeInfo){
                     callback(null, placeInfo)
+                    console.log('callback placeinfo');
+                    console.log(placeInfo);
+
                 })
             }
             break;
@@ -153,9 +139,11 @@ function closureAdd(number, index, placeid){
 
 // 등록된 투표장 길이 반환
 module.exports.placeLength = function(result) {
+    console.log('블록체인 placeLength 사용중');
     BVC.getPlaceLength(function(err, res){
         if(!err) {
             result(null, res.toLocaleString());
+            // console.log(res.toLocaleString());
         } else {
             result(err, null);
         }
@@ -164,6 +152,7 @@ module.exports.placeLength = function(result) {
 
 // 등록된 후보자 길이 반환
 module.exports.candidateLength = function(result) {
+    console.log('블록체인 candidateLength 사용중');
     BVC.getCandidateLength(function(err, res){
         if(!err) {
             result(null, res.toLocaleString());
@@ -182,6 +171,9 @@ module.exports.getPlaceId = function(placeid, placeInfo) {
         } else {
             console.log(err);
         }
+        console.log('contents');
+        console.log(contents);
+
     })
 };
 

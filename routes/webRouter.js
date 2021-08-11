@@ -4,19 +4,16 @@ var ejs = require('ejs')
 var fs = require('fs');
 var express = require('express');
 var router = express.Router();
-
-// var bodyParser = require('body-parser');
-// router.use(bodyParser.json());
-// router.use(bodyParser.urlencoded({extended : false}));
-
-router.use(express.urlencoded({ extended: false }));
-router.use(express.json());
+var bodyParser = require('body-parser');
+router.use(bodyParser.json());
+router.use(bodyParser.urlencoded({extended : false}));
 
 var rootPath = process.cwd();
 var blockFunc = require( rootPath + '/model/blockFunc' );
-console.log("webRouter 실행됨");
 var dbFunc = require( rootPath + '/model/dbFunc' );
 var FH = require( rootPath + '/model/funcHandling');
+
+console.log("webRouter 사용");
 
 const path = require("path");
 const multer = require("multer");
@@ -31,25 +28,27 @@ const handleError = (err, res) => {
 const upload = multer({
     //dest: "/path/to/temporary/directory/to/store/uploaded/files"
     //storage: multer.memoryStorage(),
-    dest: 'upload/'
+    dest: 'uploads/'
 });
 
 //메인 페이지
-router.get('/blog', function(req, res){
-    res.sendFile( rootPath + '/blog/');
+router.get('/', function(req, res){
+    res.sendFile( rootPath + './index.html');
+    console.log("메인 페이지");
 });
 
 
-//get은 rount, rouing
 // 1-1. 선거장 생성 page open
 //setPollingPlace요청에 의해 setPollingPlace.html 파일 화면에 출력
 router.get('/setPollingPlace', function(req, res){
     res.sendFile( rootPath + '/public/setPollingPlace.html');
+    console.log("선거장 생성 페이지 생성");
 });
 
 // 1-2. 선거장 생성하는 메소드
 router.post('/setPollingPlace', upload.single("file"), function(req, res){
 
+    console.log("선거장 생성 메소드 호출");
     var info = [req.body.user_name,
                 req.body.start_regist_period,
                 req.body.end_regist_period,
@@ -67,11 +66,11 @@ router.post('/setPollingPlace', upload.single("file"), function(req, res){
                 if (placeid != null){
                     dbFunc.insertPlaceInfo(placeid, isStarted, info, function(result){
 
-                        const targetPath = path.join( rootPath, "/upload/place/" + placeid + ".png");
+                        const targetPath = path.join( rootPath, "/uploads/place/" + placeid + ".png");
 
                         fs.rename(tempPath, targetPath, err => {
                             if (err) return handleError(err, res);
-                            
+
                             res.redirect('/web/getAllplace');
                         });
                     });
@@ -206,6 +205,7 @@ router.get('/getAllCandidate/:placeid', function(req, res){
 
                                 async.series(outcomeBooked, function(err1, resEnd1){
                                     bookedCandidate = resEnd1
+                                    console.log(resEnd1)
                                     res.send(ejs.render(data, {candidateList : nowcandidate, bookedCandidateList : bookedCandidate}));
                                 })
 
@@ -258,40 +258,45 @@ router.get('/getBookedCandidate/:placeid', function (req, res){
     });
 });
 
-//예비 후보자 등록 페이지 생성합니다.
+// 3-3. 예비 후보자 등록페이지 생성 page open
+//setPollingPlace요청에 의해 setPollingPlace.html 파일 화면에 출력
 router.get('/setCandidate', function(req, res){
     res.sendFile( rootPath + '/public/setCandidate.html');
+    console.log("예비 후보자 등록 페이지 생성");
 });
 
 // 3-3. 예비 후보자를 등록합니다.
 router.post('/setCandidate', upload.single("file"), function(req, res){
-    var info = [req.body.candidateid,
+    console.log('예비 후보자 등록 메소드 생성');
+    var info = [,
+                req.body.wantvote,
+                req.body.candidateid,
                 req.body.name,
                 req.body.campname,
                 req.body.slogan,
                 req.body.departure,
-                req.body.promise,
-                req.body.college,
-                req.body.wantvote]
-
-    var wantvote = req.body.wantvote;
-    var candidateid = req.body.candidateid;
+                req.body.candidateUrl,
+                req.body.colleage,
+                req.body.promiseUrl
+            ];
 
     const tempPath = req.file.path;
+
+    var candidateUrl = req.file.filename;
 
     if (path.extname(req.file.originalname).toLowerCase() === ".png" ||
         path.extname(req.file.originalname).toLowerCase() === ".jpg" ) {
 
-                        dbFunc.insertyetCandidateinfo(wantvote, info, function(result){
+                    dbFunc.insertyetCandidateinfo(wantvote, info, candidateUrl, function(result){
 
-                        const targetPath = path.join( rootPath, "/upload/candidate/" + candidateid + ".png");
+                        const targetPath = path.join( rootPath, "/uploads/candidate/" + candidateid + ".png");
 
                         fs.rename(tempPath, targetPath, err => {
                             if (err) return handleError(err, res);
 
-                        //res.redirect('/web/getAllCandidate');
-                        res.redirect('/web/getAllCandidate/'+ wantvote);
+                        res.redirect('/web/getAllCandidate');
                     });
+                    console.lpg("db 예비후보자 등록");
                 });
 
     } else {
@@ -307,20 +312,14 @@ router.post('/setCandidate', upload.single("file"), function(req, res){
 });
 
 // 3-4. 후보자를 등록합니다.
-router.get('/getAllCandidate/setCandidate/:candidateid/:name/:campname/:slogan/:departure/:promise/:colleage/:placeid', function (req, res) {
+router.get('/setCandidate/:placeid/:name', function (req, res) {
 
-    var candidateid=req.params.candidateid;
     var name=req.params.name;
-    var campname=req.params.campname;
-    var slogan=req.params.slogan;
-    var departure=req.params.departure;
-    var promise=req.params.promise;
-    var colleage=req.params.colleage;
     var placeid=req.params.placeid;
 
     blockFunc.setCandidate(placeid, function(err, candidateid){
         if(!err) {
-            dbFunc.insertCandidateInfo(candidateid,name,campname,slogan,departure,promise,colleage,placeid,function(result){
+            dbFunc.insertCandidateInfo(placeid, candidateid, name, function(result){
                 if (!err) {
                     res.redirect('/web/getAllCandidate/' + placeid);
                 } else {
@@ -387,6 +386,7 @@ router.get('/getVotingCount/:placeid', function(req, res){
   var placeid = req.params.placeid;
 
   fs.readFile( rootPath + '/public/getVotingCount.html', 'utf8', function(err, data){
+      console.log("getvotingcount readFile 오류");
     if(!err){
       blockFunc.candidateLength(function(err, length){
           if(!err){
@@ -398,12 +398,12 @@ router.get('/getVotingCount/:placeid', function(req, res){
                           if(item == null) {
                               outcomeBooked.push(FH.handlingClosureAdd(3, placeid, null, null, null));
                           } else {
-                            //   outcomeBooked.push(FH.handlingClosureAdd(3, placeid, null, item["candidateid"], item["voteCount"]));
-                              outcomeBooked.push(FH.handlingClosureAdd(3, placeid, null, item["candidateid"], 3));
+                              outcomeBooked.push(FH.handlingClosureAdd(3, placeid, null, item["candidateid"], item["voteCount"]));
                           }
                       })
 
                       async.series(outcomeBooked, function(err1, resEnd1){
+                          console.log('개표 결과' + resEnd1)
                           res.send(ejs.render(data, {VotedList : resEnd1}));
                       })
 
