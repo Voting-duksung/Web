@@ -10,6 +10,10 @@ var dbFunc = require( path + '/model/dbFunc' );
 var FH = require( path + '/model/funcHandling')
 var view = require( path + '/view/json' );
 
+//블록체인
+var Web3 = require('web3');
+var web3 = new Web3(new Web3.providers.HttpProvider('http://3.36.172.204:8545'));
+
 // 1. 선거가 시작 중인 선거장
 router.get('/getStartedPlace', function(req, res){
     blockFunc.placeLength(function(err, length){
@@ -277,6 +281,15 @@ router.get('/setAuth', function(req, res){
             console.log(err);
         }
     })
+})
+
+//9. 계정 나눠주기
+router.get('/account', function(req, res){
+    var Userid = req.param('Userid');
+    // var Userid = req.params.Userid;
+    console.log("account불러오기");
+    console.log("userid는?"+Userid);
+    web3.eth.defaultAccount = web3.eth.accounts[Userid];
 })
 
 module.exports = router;
