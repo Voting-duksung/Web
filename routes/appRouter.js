@@ -284,12 +284,34 @@ router.get('/setAuth', function(req, res){
 })
 
 //9. 계정 나눠주기
-router.get('/account', function(req, res){
+router.get('/account', function(req, res, next){
     var Userid = req.param('Userid');
     // var Userid = req.params.Userid;
-    console.log("account불러오기");
-    console.log("userid는?"+Userid);
     web3.eth.defaultAccount = web3.eth.accounts[Userid];
-})
+
+    const result = {
+        code: 0,
+        message: 'success'
+      };
+      res.send(result);
+
+});
+
+//9. 10개 계정 가져오기
+router.get('/getAccount', function(req, res, next){
+    var accounts = new Array();
+
+    for(var i=0;i<10;i++){
+        accounts[i] = web3.eth.defaultAccount = web3.eth.accounts[i];
+    }
+    const result = {
+        code: 0,
+        message: 'success',
+        account : accounts
+      };
+      
+      res.send(result);
+
+});
 
 module.exports = router;
