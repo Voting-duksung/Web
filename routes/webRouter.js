@@ -64,7 +64,7 @@ router.post('/setPollingPlace', upload.single("file"), function(req, res){
         blockFunc.setPollingPlace(function(err, placeid, isStarted){
             if (!err) {
                 if (placeid != null){
-                    dbFunc.insertPlaceInfo(placeid, isStarted, info, function(result){
+                    dbFunc.insertPlaceInfo(placeid, 0, info, function(result){
 
                         const targetPath = path.join( rootPath, "/uploads/place/" + placeid + ".png");
 
@@ -137,7 +137,7 @@ router.get('/setVoteStart/:placeid', function (req, res) {
 
     blockFunc.setVoteStart(placeid, function(err, result) {
         if (!err) {
-            dbFunc.updateIsStarted(placeid, true, function(_err, _res) {
+            dbFunc.updateIsStarted(placeid, 1, function(_err, _res) {
                 if (!_err) {
                     res.redirect('/web/getAllplace');
                 } else {
@@ -156,7 +156,7 @@ router.get('/setVoteEnd/:placeid', function (req, res) {
 
     blockFunc.setVoteEnd(placeid, function(err, result) {
         if (!err) {
-            dbFunc.updateIsStarted(placeid, 3, function(_err, _res) {
+            dbFunc.updateIsStarted(placeid, 0, function(_err, _res) {
                 if (!_err) {
                     res.redirect('/web/getAllplace');
                 } else {
@@ -175,7 +175,7 @@ router.get('/getAllCandidate/:placeid', function(req, res){
     var nowcandidate = [];
     var bookedCandidate = [];
 
-    fs.readFile('public/getAllCandidate.html', 'utf8', function(err, data){
+    fs.readFile(rootPath + '/public/getAllCandidate.html', 'utf8', function(err, data){
         dbFunc.selectCandidateList(placeid, function(_err, _res) {
             if(!_err){
                 var result = []
@@ -205,7 +205,6 @@ router.get('/getAllCandidate/:placeid', function(req, res){
 
                                 async.series(outcomeBooked, function(err1, resEnd1){
                                     bookedCandidate = resEnd1
-                                    console.log(resEnd1)
                                     res.send(ejs.render(data, {candidateList : nowcandidate, bookedCandidateList : bookedCandidate}));
                                 })
 
@@ -268,35 +267,33 @@ router.get('/setCandidate', function(req, res){
 // 3-3. 예비 후보자를 등록합니다.
 router.post('/setCandidate', upload.single("file"), function(req, res){
     console.log('예비 후보자 등록 메소드 생성');
-    var info = [,
-                req.body.wantvote,
+    var info = [req.body.wantvote,
                 req.body.candidateid,
                 req.body.name,
                 req.body.campname,
                 req.body.slogan,
                 req.body.departure,
-                req.body.candidateUrl,
-                req.body.colleage,
-                req.body.promiseUrl
-            ];
+                req.body.promise,
+                req.body.colleage];
+
+    var candidateid = req.body.candidateid;
+    var wantvote = req.body.wantvote;
 
     const tempPath = req.file.path;
-
-    var candidateUrl = req.file.filename;
 
     if (path.extname(req.file.originalname).toLowerCase() === ".png" ||
         path.extname(req.file.originalname).toLowerCase() === ".jpg" ) {
 
-                    dbFunc.insertyetCandidateinfo(wantvote, info, candidateUrl, function(result){
-
+                    dbFunc.insertyetCandidateinfo(wantvote, info, function(result){
+                        
                         const targetPath = path.join( rootPath, "/uploads/candidate/" + candidateid + ".png");
 
                         fs.rename(tempPath, targetPath, err => {
                             if (err) return handleError(err, res);
 
-                        res.redirect('/web/getAllCandidate');
+                            res.redirect('/web/getAllCandidate/'+ wantvote);
                     });
-                    console.lpg("db 예비후보자 등록");
+                    console.log("db 예비후보자 등록");
                 });
 
     } else {
@@ -311,19 +308,40 @@ router.post('/setCandidate', upload.single("file"), function(req, res){
     }
 });
 
-// 3-4. 후보자를 등록합니다.
-router.get('/setCandidate/:placeid/:name', function (req, res) {
+// 3-4. 진짜 후보자를 등록합니다.
+router.get('/setCandidate/:candidateid/:name/:campname/:slogan/:departure/:promise/:colleage/:wantvote', function (req, res) {
 
+    var candidateid=req.params.candidateid;
     var name=req.params.name;
-    var placeid=req.params.placeid;
+    var campname=req.params.campname;
+    var slogan=req.params.slogan;
+    var departure=req.params.departure;
+    var promise=req.params.promise;
+    var colleage=req.params.colleage;
+    var placeid=req.params.wantvote;
 
     blockFunc.setCandidate(placeid, function(err, candidateid){
         if(!err) {
-            dbFunc.insertCandidateInfo(placeid, candidateid, name, function(result){
-                if (!err) {
-                    res.redirect('/web/getAllCandidate/' + placeid);
+            dbFunc.checkCandidate(placeid, function(_err, _result){
+                if(!_err){
+                    var candi = _result[0].candiNum;
+                    candi++;
+                    dbFunc.insertCandidateInfo(candidateid, name, campname, slogan, departure, promise, colleage, placeid, function(result){
+                        if (!err) {
+                            dbFunc.deleteYetCandidate(candi, function(err_,result_){
+                                if(!err_){
+                                    console.log("결과"+result_);
+                                    res.redirect('/web/getAllCandidate/' + placeid);
+                                }else {
+                                    console.log("예비후보자 데이터 삭제 실패!");
+                                }
+                            })
+                        } else {
+                            console.log('candidate insert fail');
+                        }
+                    })
                 } else {
-                    console.log('candidate insert fail');
+                    console.log("실패!");
                 }
             })
         }else{
@@ -333,7 +351,7 @@ router.get('/setCandidate/:placeid/:name', function (req, res) {
 });
 
 // 3-5. 후보자를 사퇴시킵니다.
-router.get('/getAllCandidate/setCandidateResign/:candidateid/:placeid', function(req, res){
+router.get('/setCandidateResign/:candidateid/:placeid', function(req, res){
     var candidateid = req.params.candidateid;
     var placeid = req.params.placeid;
     dbFunc.updateCandidateState(candidateid, function(_err, _res){
