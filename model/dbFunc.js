@@ -28,25 +28,26 @@ module.exports.insertPlaceInfo = function(placeid, isStarted, info, result) {
 module.exports.insertyetCandidateinfo = function(wantvote, info, result) {
 
     var wantvote = parseInt(wantvote);
-    var state = 0;
+    var statue = 0;
+
 
     var sql = 'INSERT INTO yetcandidateinfo (candidateid, name, campname, slogan, departure, state, promise, colleage, wantvote) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
-    var params = [info[0], info[1], info[2], info[3], info[4], state, info[5], info[6], wantvote];
+    var params = [info[1], info[2], info[3], info[4], info[5], statue, info[6], info[7], wantvote];
 
     db.query(sql, params, function(err, res){
         if(!err) {
             console.log("insertyetCandidateinfo success");
-            result("<h1>예비 후보자가 등록되었습니다.....</h1>");
+            result("<h1>예비 후보자가 등록되었습니다…..</h1>");
 
         } else {
             console.log("insertyetCandidateinfo err : " + err);
             result("예비 후보자 등록이 실패했습니다. 잠시 후 다시 시도해주세요.");
         }
     })
-};
+}
 
 
-//후보자를 등록합니다 블록체인 까지
+//후보자를 등록합니다.
 module.exports.insertCandidateInfo = function(candidateid, name, campname, slogan, departure, promise, colleage, placeid, result){
     var candidateid = candidateid;
     var name = name;
@@ -57,19 +58,14 @@ module.exports.insertCandidateInfo = function(candidateid, name, campname, sloga
     var state = 1;
     var colleage = colleage;
     var placeid = placeid;
-    var departure = departure;
     var wantvote = placeid;
-    
-    // var sql ='SELECT LEFT(SUBSTRING_INDEX(m.meta_value,\'"\',-2), LENGTH(SUBSTRING_INDEX(m.meta_value,\'"\',-2))-3) AS \'image\' FROM wp_users u JOIN wp_usermeta m ON u.ID = m.user_id WHERE m.meta_key= "wp_user_avatars" AND u.user_login=?'
-    // var params = [user_login];
+    var candidateresult = 0;
+
     var sql;
     var params;
 
-    // db.query(sql, params, function(err, url){
-    //     if(!err){
-    sql = 'INSERT INTO candidateinfo (candidateid, name, campname, slogan, departure, state, promise, colleage, wantvote) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
-    //sql = 'INSERT INTO candidateinfo (candidateid, name, campname, slogan, departure, state, candidateUrl, promiseUrl, colleage, wantvote) VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?, ?)';
-    params = [candidateid, name, campname, slogan, departure, state, promise, colleage, wantvote];
+    sql = 'INSERT INTO candidateinfo(candidateid, name, campname, slogan, departure, state, promise, colleage, wantvote, candidateresult) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+    params = [candidateid, name, campname, slogan, departure, state, promise, colleage, wantvote, candidateresult];
         db.query(sql, params, function(err, res){
             if(!err) {
                 console.log("insert success");
@@ -78,24 +74,18 @@ module.exports.insertCandidateInfo = function(candidateid, name, campname, sloga
                 var params1=[candidateid]
                 db.query(sql1, params1, function(err, res){
                     if(!err){
-                        console.log("the end")
                         result(null, res);
                     } else {
-                        console.log("not end")
                         result(err, null);
                     }
                 })
 
             } else {
-                console.log(err);
+                console.log(err + "if err 여기여기");
             }
         })
-
-        // } else {
-        //     result(err, null);
-        // }
-    // })
 }
+
 
 // 후보자를 사퇴시킵니다.
 module.exports.updateCandidateState = function(candidateid, result){
@@ -240,6 +230,33 @@ module.exports.isAction = function(token, result){
 module.exports.setAuth = function(token, result){
     var sql = 'UPDATE auth SET isAction=1 where token=?';
     var params = [token];
+    db.query(sql, params, function(err, res){
+        if(!err){
+            result(null, res);
+        } else {
+            result(err, null);
+        }
+    })
+}
+
+// DB에 등록된 후보자 가져오기
+module.exports.checkCandidate = function(placeid, result){
+    var sql = 'select count(name) as candiNum from candidateinfo where wantvote=?';
+    var params = [placeid];
+    db.query(sql, params, function(err, res){
+        if(!err){
+            result(null, res);
+        } else {
+            result(err, null);
+        }
+    })
+}
+
+// 진짜 후보자로 등록 시 예비후보자 데이터 삭제
+module.exports.deleteYetCandidate = function(candidateid, result){
+    console.log("candi"+candidateid);
+    var sql = 'delete from yetcandidateinfo where candidateid=?';
+    var params = [candidateid];
     db.query(sql, params, function(err, res){
         if(!err){
             result(null, res);

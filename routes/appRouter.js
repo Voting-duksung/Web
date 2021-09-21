@@ -7,12 +7,13 @@ var path = process.cwd();
 console.log("appRouter 사용");
 var blockFunc = require( path + '/model/blockFunc' );
 var dbFunc = require( path + '/model/dbFunc' );
-var FH = require( path + '/model/funcHandling')
+var FH = require( path + '/model/funcHandling');
 var view = require( path + '/view/json' );
 
 //블록체인
 var Web3 = require('web3');
 var web3 = new Web3(new Web3.providers.HttpProvider('http://3.36.172.204:8545'));
+// var count;
 
 // 1. 선거가 시작 중인 선거장
 router.get('/getStartedPlace', function(req, res){
@@ -156,22 +157,9 @@ router.get('/getBookedCandidate', function(req, res){
 
 // 5. 투표권을 행사합니다.
 router.get('/setVote', function(req, res){
-    console.log("투표권 행사 호출");
     var placeid = parseInt(req.param('placeid'));
     var candidateid = parseInt(req.param('candidateid'));
     var UserNumber = parseInt(req.param('UserNumber'));
-
-    // console.log(req.params.placeid)
-    // console.log(req.body.candidateid);
-    // console.log(req.body.UserNumber);
-
-    // var placeid = parseInt(req.params.placeid);
-    // var candidateid = parseInt(req.params.candidateid);
-    // var phone = parseInt(req.params.UserNumber);
-
-    console.log(placeid+"선거장 아이디");
-    console.log(candidateid+"후보자 번호");
-    console.log(UserNumber+"학번");
     
 
     blockFunc.getCheckVoted(placeid, UserNumber, function(err, resd){
@@ -181,6 +169,7 @@ router.get('/setVote', function(req, res){
                     view.jsonParsing(200, "success", _res, function(jsonData){
                         console.log("투표 성공");
                         res.json(jsonData);
+                        console.log(jsonData);
                     })
                 } else {
                     view.jsonParsing(400, "투표를 진행할 수 없습니다.", "", function(jsonData){
@@ -281,7 +270,7 @@ router.get('/setAuth', function(req, res){
             console.log(err);
         }
     })
-})
+});
 
 //9. 계정 나눠주기
 router.get('/account', function(req, res, next){
@@ -300,18 +289,26 @@ router.get('/account', function(req, res, next){
 //9. 10개 계정 가져오기
 router.get('/getAccount', function(req, res, next){
     var accounts = new Array();
+    
 
     for(var i=0;i<10;i++){
-        accounts[i] = web3.eth.defaultAccount = web3.eth.accounts[i];
+        var account = new Object();
+        account.data = web3.eth.defaultAccount = web3.eth.accounts[i];
+        // accounts.push(account);
+        accounts[i] = account;
     }
+
     const result = {
         code: 0,
         message: 'success',
-        account : accounts
+        accounts : accounts
       };
       
-      res.send(result);
+      res.json(result);
+
+    // res.json(accounts);
 
 });
+
 
 module.exports = router;
